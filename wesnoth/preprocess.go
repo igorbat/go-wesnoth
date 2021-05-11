@@ -18,9 +18,7 @@ package wesnoth
 import (
 	"io/ioutil"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
+	"fmt"
 )
 
 var (
@@ -28,19 +26,30 @@ var (
 	Output  = os.TempDir() + "/go-wesnoth/output"
 )
 
-func Preprocess(filePath string, defines []string) []byte {
-	defines = append(defines, "MULTIPLAYER")
-	if _, err := os.Stat(Output); os.IsNotExist(err) {
-		os.MkdirAll(Output, 0755)
+func Preprocess(typee string, defines []string) []byte {
+	//defines = append(defines, "MULTIPLAYER")
+	//if _, err := os.Stat(Output); os.IsNotExist(err) {
+	//	os.MkdirAll(Output, 0755)
+	//}
+	//cmd := exec.Command(
+	//	Wesnoth,
+	//	"-p",
+	//	filePath,
+	//	Output,
+	//	"--preprocess-defines=MULTIPLAYER"+strings.Join(defines, ","),
+	//)
+	//cmd.Run()
+	var pathh string
+	if (typee == "eras") {
+		pathh = "c:\\Users\\IgorBat\\Desktop\\ET_bots\\eras.cfg"
 	}
-	cmd := exec.Command(
-		Wesnoth,
-		"-p",
-		filePath,
-		Output,
-		"--preprocess-defines="+strings.Join(defines, ","),
-	)
-	cmd.Run()
-	result, _ := ioutil.ReadFile(Output + "/" + filepath.Base(filePath))
+	if (typee == "units"){
+		pathh = "c:\\Users\\IgorBat\\Desktop\\ET_bots\\units.cfg"
+	}
+	if (typee == "isar") {
+		pathh = "c:\\Users\\IgorBat\\Desktop\\ET_bots\\4p_Isars_Cross.cfg"
+	}
+	result, err := ioutil.ReadFile(pathh)
+	fmt.Println("In preprocess " + typee + " captured ", err)
 	return result
 }

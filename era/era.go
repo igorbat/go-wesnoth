@@ -16,10 +16,10 @@
 package era
 
 import (
+	"fmt"
+	"go-wesnoth/wesnoth"
+	"go-wml"
 	"regexp"
-
-	"github.com/renom/go-wesnoth/wesnoth"
-	"github.com/renom/go-wml"
 )
 
 type Era struct {
@@ -30,17 +30,19 @@ type Era struct {
 	Events   []wml.RawData
 }
 
-var ErasPath = "/usr/share/wesnoth/data/multiplayer/eras.cfg"
+var ErasPath = "C:\\Program Files (x86)\\Battle for Wesnoth 1.14.7\\data\\multiplayer\\eras.cfg"
 var eras []byte
 
 func Parse(id string) Era {
 	if len(eras) == 0 {
-		eras = wesnoth.Preprocess(ErasPath, nil)
+		eras = wesnoth.Preprocess("eras", nil)
 	}
-	e, _ := regexp.Compile(`(?U)\[era\]\n(?:[^\[\]]*\n)*\tid="era_` + id + `"\n(?:.*\n)*\tname=_?"(.*)"\n(?:.*\n)*\[/era\]`)
+	fmt.Println("eras preprocess finished")
+	e, _ := regexp.Compile(`(?U)\[era\]\n(?:[^\[\]]*\n)*\tid="era_` + id + `"\n(?:.*\n)*\tname=_?"(.*)"\n(?:.*\n)*\[\/era\]`)
 	body := string(e.Find(eras)) + "\n"
-	name := e.FindStringSubmatch(body)[1]
+	//fmt.Println(body)
 
+	name := "default_era"
 	r, _ := regexp.Compile(`(?U)\[multiplayer_side\](.*\n)*[\t ]*\[/multiplayer_side\]`)
 	f := r.FindAll([]byte(body), -1)
 	rData, _ := regexp.Compile(`(?U)[\t ]*[0-9a-z_]+[\t ]*=[\t ]*_?"[^"](.|\n)*` + `([^"]"[\t\n ]*\+[\t\n ]*_?"[^"])+` +
@@ -61,5 +63,6 @@ func Parse(id string) Era {
 		events = append(events, wml.RawData(v[1]))
 	}
 
+	fmt.Println("returning Era")
 	return Era{id, name, body, factions, events}
 }

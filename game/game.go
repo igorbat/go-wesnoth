@@ -19,10 +19,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/renom/go-wesnoth/era"
-	"github.com/renom/go-wesnoth/scenario"
-	"github.com/renom/go-wesnoth/wesnoth"
-	"github.com/renom/go-wml"
+	"go-wesnoth/era"
+	"go-wesnoth/scenario"
+	"go-wesnoth/wesnoth"
+	"go-wml"
 )
 
 var (
@@ -64,6 +64,8 @@ type Game struct {
 	NotNewGame bool   // To set up manually
 	Player1    string // To set up manually
 	Player2    string // To set up manually
+	Player3    string // To set up manually
+	Player4    string // To set up manually
 	Id         string // Obtained by Parse()
 	Name       string // Obtained by Parse()
 	scenario   string // Obtained by Parse()
@@ -75,10 +77,13 @@ type Game struct {
 	ActionBonus   int
 }
 
-func NewGame(title string, scenario scenario.Scenario, era era.Era,
+func NewGame(title string, scenario scenario.Scenario,
+	era era.Era,
 	timerEnabled bool, initTime int, turnBonus int, reservoirTime int,
 	actionBonus int, version string) Game {
-	game := Game{Title: title, Scenario: scenario, Era: era, Version: version,
+	game := Game{Title: title, Scenario: scenario,
+		Era: era,
+		Version: version,
 		TimerEnabled: timerEnabled, InitTime: initTime, TurnBonus: turnBonus,
 		ReservoirTime: reservoirTime, ActionBonus: actionBonus}
 	game.Parse()
@@ -88,7 +93,7 @@ func NewGame(title string, scenario scenario.Scenario, era era.Era,
 func (g *Game) Parse() {
 	replacer := strings.NewReplacer("[multiplayer]", "[scenario]",
 		"[/multiplayer]", "[/scenario]")
-	g.scenario = replacer.Replace(string(wesnoth.Preprocess(g.Scenario.Path(), g.Scenario.Defines())))
+	g.scenario = replacer.Replace(string(wesnoth.Preprocess("isar", g.Scenario.Defines())))
 	s, _ := regexp.Compile(`(?U)\[scenario\]\n(?:[^\[\]]*\n)*\tid="(.*)"\n(?:.*\n)*\tname=_?"(.*)"\n(?:.*\n)*\[/scenario\]`)
 	g.Id = s.FindStringSubmatch(g.scenario)[1]
 	g.Name = s.FindStringSubmatch(g.scenario)[2]
@@ -102,8 +107,7 @@ func (g Game) String() string {
 	return g.topLevel() +
 		g.scenarioBlock() +
 		g.carryoverBlock() +
-		g.multiplayerBlock() +
-		g.eraBlock()
+		g.multiplayerBlock() + g.eraBlock()
 }
 
 func (g *Game) topLevel() string {
@@ -139,6 +143,8 @@ func (g *Game) scenarioBlock() string {
 	scenario := g.scenario
 	scenario = replaceSide(scenario, sideTag(wml.MergeData(sideData, wml.ParseTag(sides[0]).Data), "red", g.Player1), indent)
 	scenario = replaceSide(scenario, sideTag(wml.MergeData(sideData, wml.ParseTag(sides[1]).Data), "blue", g.Player2), indent)
+	scenario = replaceSide(scenario, sideTag(wml.MergeData(sideData, wml.ParseTag(sides[2]).Data), "green", g.Player3), indent)
+	scenario = replaceSide(scenario, sideTag(wml.MergeData(sideData, wml.ParseTag(sides[3]).Data), "orange", g.Player4), indent)
 	r_attributes, _ := regexp.Compile(`(?sU)^(\[scenario\]\n)(.*\n)([\t ]*\[/?[0-9a-z_]+\])`)
 	matches := r_attributes.FindStringSubmatch(scenario)
 	attributes := wml.ParseData(matches[2])
